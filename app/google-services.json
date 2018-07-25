@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "757585625788",
+    "firebase_url": "https://icypicks-d56dd.firebaseio.com",
+    "project_id": "icypicks-d56dd",
+    "storage_bucket": "icypicks-d56dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757585625788:android:b8dbbf9010c6cda2",
+        "android_client_info": {
+          "package_name": "com.icypicks.www.icypicks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "757585625788-fmvv867tg6t7uscvru3k226qco2r6vab.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.icypicks.www.icypicks",
+            "certificate_hash": "545e33be1c1b64c192c3226ff40036a8dd09581a"
+          }
+        },
+        {
+          "client_id": "757585625788-aqih2ah9h3ffnln0mhmeedf8o1ihlss3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEn4QvUMRAVyxYkipO-K7rVwRKUiJWQ2I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "757585625788-aqih2ah9h3ffnln0mhmeedf8o1ihlss3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
