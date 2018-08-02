@@ -1,6 +1,8 @@
 package com.icypicks.www.icypicks.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -29,7 +31,9 @@ import com.icypicks.www.icypicks.java_classes.User;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,12 +55,14 @@ public class MainActivity extends AppCompatActivity {
     private User user;
     private AllIceCreamAdapter allIceCreamAdapter;
     private MustTryIceCreamAdapter mustTryIceCreamAdapter;
-    private static int numberOfUploads;
+    private int numberOfUploads;
 
-    private static final String infoFileName = "info.txt";
+    public static final String INFO_FILE_NAME = "info.txt";
     private static final int REQUEST_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String FIREBASE_DATABASE_REFERENCE = "user";
+    public static final String FILE_NAME = "image_file_name.txt";
+    private Fragment fragment;
 
     @BindView(R.id.fragment_container)
     FrameLayout container;
@@ -79,33 +85,30 @@ public class MainActivity extends AppCompatActivity {
 
 
         bottomNavigationView.setOnNavigationItemSelectedListener(menuItem->{
-            Fragment iceCreamFragment = null;
 
             switch (menuItem.getItemId()){
                 case R.id.all:
-                    iceCreamFragment = new AllFragment();
-                   ((AllFragment) iceCreamFragment).setAllIceCreamAdapter(allIceCreamAdapter);
+                    fragment = new AllFragment();
+                   ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
                     break;
                 case R.id.must_try:
-                    iceCreamFragment = new MustTryFragment();
-//                    mustTryIceCreamAdapter = new MustTryIceCreamAdapter();
-//                    ((MustTryFragment) iceCreamFragment).setIceCreamAdapter(mustTryIceCreamAdapter);
+                    fragment = new MustTryFragment();
                     break;
             }
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, iceCreamFragment)
+                    .replace(R.id.fragment_container, fragment)
                     .commit();
 
             return true;
         });
 
-        AllFragment initialFragment = new AllFragment();
-        initialFragment.setAllIceCreamAdapter(allIceCreamAdapter);
+        fragment = new AllFragment();
+        ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, initialFragment)
+                .add(R.id.fragment_container, fragment)
                 .commit();
 
         shareFab.setOnClickListener(view->{
@@ -123,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 numberOfUploads = Integer.parseInt(String.valueOf(dataSnapshot.getValue()));
                 if(allIceCreamAdapter != null) {
-                    allIceCreamAdapter.notifyDataSetChanged();
+                    allIceCreamAdapter.setNumberOfImages(numberOfUploads);
                 }
             }
 
@@ -132,10 +135,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
-//        Intent intent = new Intent(this, DetailActivity.class);
-//        startActivity(intent);
     }
 
     @Override
@@ -161,6 +160,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.profile, menu);
         return super.onCreateOptionsMenu(menu);
@@ -169,19 +173,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.see_profile) {
-            if (!isLoggedIn){// || !hasAccount) {
-                try {
-                    File file = new File(this.getCacheDir(), infoFileName);
-                    FileReader fileReader = new FileReader(file);
-                    BufferedReader bufferedReader = new BufferedReader(fileReader);
-                    hasAccount = Boolean.parseBoolean(bufferedReader.readLine());
-                    bufferedReader.close();
-                    fileReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (!isLoggedIn){
                 Intent intent = new Intent(this, LogInSignUpActivity.class);
-                intent.putExtra(LogInSignUpActivity.ACCOUNT_INFO, hasAccount);
                 startActivityForResult(intent, REQUEST_CODE);
             }
             else{
@@ -212,6 +205,19 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQUEST_CODE && resultCode == RESULT_OK){
             String email = data.getStringExtra(LogInSignUpActivity.EMAIL_INTENT);
             String password = data.getStringExtra(LogInSignUpActivity.PASSWORD_INTENT);
+            File infoFile = new File(this.getCacheDir(), INFO_FILE_NAME);
+            try {
+                FileReader fileReader = new FileReader(infoFile);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                hasAccount = Boolean.parseBoolean(bufferedReader.readLine());
+                bufferedReader.close();
+                fileReader.close();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+                hasAccount = false;
+            }
+//            Toast.makeText(this, String.valueOf(hasAccount), Toast.LENGTH_SHORT).show();
             if(!hasAccount) {
                 auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(task -> {
@@ -221,8 +227,7 @@ public class MainActivity extends AppCompatActivity {
                                 isLoggedIn = currentUser != null;
 
                                 try {
-                                    File file = new File(this.getCacheDir(), infoFileName);
-                                    FileWriter fileWriter = new FileWriter(file, false);
+                                    FileWriter fileWriter = new FileWriter(infoFile, false);
                                     BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                                     bufferedWriter.write("true");
                                     bufferedWriter.newLine();
@@ -235,6 +240,22 @@ public class MainActivity extends AppCompatActivity {
                                 User user = data.getParcelableExtra(LogInSignUpActivity.USER_INTENT);
                                 databaseReference = database.getReference("user").child(currentUser.getUid());
                                 databaseReference.setValue(user);
+
+                                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference().child("users").child(currentUser.getUid()).child("profile_image.jpg");
+//                                Bitmap bitmap = (Bitmap) data.getParcelableExtra(LogInSignUpActivity.PROFILE_IMAGE_INTENT);
+                                Bitmap bitmap = null;
+                                try {
+                                    bitmap = BitmapFactory.decodeStream(this.openFileInput(FILE_NAME));
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                                    userStorageReference.putBytes(stream.toByteArray());
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(this, R.string.error_uploading_image, Toast.LENGTH_SHORT).show();
+                                }
+                                File file = new File(this.getCacheDir(), FILE_NAME);
+                                file.delete();
+                                //code was taken from stack overflow post: https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array#4989543
                             }
                             else {
                                 Log.d(TAG, "createUserWithEmail:failure", task.getException());
@@ -262,3 +283,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
+//TODO list:
+//widget
+//accessibility
+//rotations
+//signed api
+//app crashes when user log ins and then tries to add something to the SQLite database
+//progress bar
+//delete from SQLite    (almost done, when something is deleted the fragment isn't refreshed)
+//change image from button
+//add list of posts
+
+//TODO message Nick to tell him about Cant-communicate.txt

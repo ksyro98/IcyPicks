@@ -129,7 +129,7 @@ public class ShareActivity extends AppCompatActivity implements
 
             if(!"".equals(flavor) && !"".equals(description) && resultsBitmap != null && resultPlace != null) {
                 if (finalUser != null && currentUser != null) {
-                    StorageReference storageReference = firebaseStorage.getReference().child(String.valueOf(finalUploadNumber));
+                    StorageReference storageReference = firebaseStorage.getReference().child(String.valueOf(finalUploadNumber+1));
                     StorageReference imageStorageReference = storageReference.child("image.jpg");
                     StorageReference flavorStorageReference = storageReference.child("flavor.txt");
                     StorageReference descriptionStorageReference = storageReference.child("description.txt");
@@ -146,7 +146,6 @@ public class ShareActivity extends AppCompatActivity implements
                                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                                 DatabaseReference databaseReference = firebaseDatabase.getReference("numberOfUploads");
                                 databaseReference.setValue(String.valueOf(finalUploadNumber+1));
-
                             }));
 
                     try {
@@ -159,10 +158,15 @@ public class ShareActivity extends AppCompatActivity implements
                         Log.d(TAG, e.toString());
                         Toast.makeText(this, R.string.text_upload_failure, Toast.LENGTH_SHORT).show();
                     }
+
+                    finalUser.addUpload(finalUploadNumber+1);
+                    DatabaseReference uploadNumberDatabaseReference = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid()).child("uploads");
+                    uploadNumberDatabaseReference.setValue(finalUser.getUploads());
+
                     NavUtils.navigateUpFromSameTask(this);
                 }
                 else{
-                    Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.not_logged_in_error, Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -205,7 +209,6 @@ public class ShareActivity extends AppCompatActivity implements
         }
         else if((requestCode == REQUEST_PLACE_PICKER) && (resultCode == RESULT_OK)){
             Place place = PlacePicker.getPlace(this, data);
-            Toast.makeText(this, place.getName(), Toast.LENGTH_SHORT).show();
             resultPlace = String.valueOf(place.getLatLng().latitude)+"_"+String.valueOf(place.getLatLng().longitude);
 //            BitmapUtils.deleteImageFile(this, tempPhotoPath);
         }
@@ -218,8 +221,6 @@ public class ShareActivity extends AppCompatActivity implements
     private void createFileAndSend(String dataToSend, StorageReference storageReference, String name) throws IOException {
         File file = new File(this.getCacheDir(), name + "_tempIcyPickFile.txt");
 
-        //TODO the file is probably written twice (first flavor the description) so the content of the description file is uploaded twice
-        //TODO try fix it with concatenation in file name
         FileWriter fileWriter = new FileWriter(file, false);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         bufferedWriter.write(dataToSend);

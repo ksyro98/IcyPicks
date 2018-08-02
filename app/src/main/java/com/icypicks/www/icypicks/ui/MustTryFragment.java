@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import butterknife.ButterKnife;
 
 
 public class MustTryFragment extends Fragment {
+
+    private static final String TAG = MustTryIceCreamAdapter.class.getSimpleName();
 
     @BindView(R.id.must_try_ice_cream_recycler_view)
     RecyclerView mustTryRecyclerView;
@@ -89,7 +92,7 @@ public class MustTryFragment extends Fragment {
                 String description = cursor.getString(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_DESCRIPTION));
                 byte[] imageBytes = cursor.getBlob(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_IMAGE));
                 int uploadNumber = cursor.getInt(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_UPLOAD_NUMBER));
-                IceCream iceCream = new IceCream(flavor, place, description, null, null);
+                IceCream iceCream = new IceCream(flavor, place, description, null);
                 iceCream.setUploadNumber(uploadNumber);
                 iceCream.setImageBytes(imageBytes);
                 mustTryIceCreams.add(iceCream);
@@ -97,5 +100,9 @@ public class MustTryFragment extends Fragment {
 
             mustTryIceCreamAdapter.notifyDataSetChanged();
         }
+    }
+
+    public void notifyAdapterDataChange(){
+        mustTryIceCreamAdapter.notifyDataSetChanged();;
     }
 }

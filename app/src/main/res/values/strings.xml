@@ -16,7 +16,7 @@
     <string name="repeat_password">Repeat Password</string>
     <string name="sign_up">Sign up</string>
     <string name="log_in">Log in</string>
-    <string name="forgot_password">Forgot Password</string>
+    <string name="create_new_account">Create new account</string>
     <string name="already_have_an_account">Already Have an Account?</string>
     <string name="passwords_dont_match">Passwords do not match.</string>
     <string name="empty_fields">There are empty fields.</string>
@@ -43,4 +43,9 @@
     <string name="unexpected_error">An unexpected error has occurred.</string>
     <string name="error_loading_description">There was an error loading the user description.</string>
     <string name="must_try">Must Try</string>
+    <string name="not_logged_in_error">You must be logged in to share.</string>
+    <string name="error_uploading_image">There was an error uploading your image.</string>
+    <string name="new_image_info_message">Your new image will be visible soon!</string>
+    <string name="unable_to_load_description">Unable to load description.</string>
+    <string name="unable_to_load_flavor">Unable to load ice cream flavor.</string>
 </resources>

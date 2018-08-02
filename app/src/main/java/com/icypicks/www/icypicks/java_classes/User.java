@@ -65,6 +65,24 @@ public class User implements Parcelable {
         this.uploads = uploads;
     }
 
+    public void addUpload(int numberOfUpload){
+        if(uploads == null){
+            this.uploads = new ArrayList<>();
+        }
+        this.uploads.add(numberOfUpload);
+    }
+
+    public String getStringOfUploads(){
+        StringBuilder stringBuilder = new StringBuilder();
+        if(uploads == null){
+            return null;
+        }
+        for(Integer uploadNumber : uploads){
+            stringBuilder.append(String.valueOf(uploadNumber)).append("_");
+        }
+        return stringBuilder.toString();
+    }
+
     protected User(Parcel in) {
         name = in.readString();
         favoriteFlavor = in.readString();

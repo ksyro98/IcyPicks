@@ -6,7 +6,6 @@ public class IceCream {
     private String flavor;
     private String place;
     private String description;
-    private ArrayList<String> usersComments;
     private String imageUrl;
     private int uploadNumber;
     private byte[] imageBytes;
@@ -15,11 +14,10 @@ public class IceCream {
 
     }
 
-    public IceCream(String flavor, String place, String description, ArrayList<String> usersComments, String imageUrl) {
+    public IceCream(String flavor, String place, String description, String imageUrl) {
         this.flavor = flavor;
         this.place = place;
         this.description = description;
-        this.usersComments = usersComments;
         this.imageUrl = imageUrl;
     }
 
@@ -45,14 +43,6 @@ public class IceCream {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public ArrayList<String> getUsersComments() {
-        return usersComments;
-    }
-
-    public void setUsersComments(ArrayList<String> usersComments) {
-        this.usersComments = usersComments;
     }
 
     public String getImageUrl() {

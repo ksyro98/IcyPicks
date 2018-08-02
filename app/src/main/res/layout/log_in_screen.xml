@@ -13,6 +13,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/email_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,15 +61,15 @@
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/forgot_password_text_view" />
+        app:layout_constraintStart_toEndOf="@+id/cretete_new_account_text_view" />
 
     <TextView
-        android:id="@+id/forgot_password_text_view"
+        android:id="@+id/cretete_new_account_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/forgot_password"
+        android:text="@string/create_new_account"
         android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/log_in_button"
         app:layout_constraintEnd_toStartOf="@+id/log_in_button"

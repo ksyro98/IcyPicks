@@ -36,7 +36,7 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
     @Override
     public AllIceCreamViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        int layoutIdForListItem = R.layout.ice_cream_recycler_view_item;
+        int layoutIdForListItem = R.layout.ice_cream_recycler_view_item_1;
         LayoutInflater layoutInflater = LayoutInflater.from(context);
 
         View view = layoutInflater.inflate(layoutIdForListItem, parent, false);
@@ -51,9 +51,10 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
         if(firebaseUser != null) {
             StorageReference storageReference = firebaseStorage.getReference().child(String.valueOf(numberOfImages-position)).child("image.jpg");
             storageReference.getDownloadUrl()
-                    .addOnSuccessListener(uri -> Glide.with(context).load(uri).into(holder.iceCreamImageView))
+                    .addOnSuccessListener(uri -> Glide.with(context.getApplicationContext()).asBitmap().load(uri).into(holder.iceCreamImageView))
                     .addOnFailureListener(Throwable::printStackTrace);
         }
+
         holder.iceCreamImageView.setOnClickListener(view -> {
             Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
             Intent intent = new Intent(context, DetailActivity.class);
@@ -68,13 +69,17 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
         return numberOfImages+1;
     }
 
+    void setNumberOfImages(int numberOfImages){
+        this.numberOfImages = numberOfImages;
+        this.notifyDataSetChanged();
+    }
 
     class AllIceCreamViewHolder extends RecyclerView.ViewHolder{
 
         @BindView(R.id.ice_cream_image_view)
         ImageView iceCreamImageView;
 
-        public AllIceCreamViewHolder(View itemView) {
+        AllIceCreamViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
