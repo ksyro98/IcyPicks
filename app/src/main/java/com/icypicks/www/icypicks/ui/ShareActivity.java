@@ -94,6 +94,7 @@ public class ShareActivity extends AppCompatActivity implements
         int uploadNumber = 0;
         if(startIntent != null) {
             user = startIntent.getParcelableExtra(LogInSignUpActivity.USER_INTENT);
+            Log.d(TAG, String.valueOf(user == null));
             uploadNumber = startIntent.getIntExtra(UPLOAD_NUMBER_INTENT, 0);
         }
 

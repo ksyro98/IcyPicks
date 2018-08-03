@@ -248,6 +248,9 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
                     Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
                 }
             }
+            Intent intent = new Intent(this, MustTryWidgetProvider.class);
+            intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+            sendBroadcast(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -263,6 +266,7 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         map.addMarker(markerOptions);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1, 10));
     }
+
 
     @SuppressLint("StaticFieldLeak")
     @NonNull

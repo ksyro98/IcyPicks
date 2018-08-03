@@ -61,12 +61,11 @@ public class MustTryFragment extends Fragment {
 //        this.mustTryIceCreamAdapter = mustTryIceCreamAdapter;
 //    }
 
-
+    //TODO change that :(
     class IceCreamTask extends AsyncTask<Void, Void, Cursor> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //TODO add progressbar
         }
 
         @Override

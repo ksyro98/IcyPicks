@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String INFO_FILE_NAME = "info.txt";
     private static final int REQUEST_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static final String FIREBASE_DATABASE_REFERENCE = "user";
+    public static final String USER = "user";
     public static final String FILE_NAME = "image_file_name.txt";
     private Fragment fragment;
 
@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         shareFab.setOnClickListener(view->{
             Intent intent = new Intent(this, ShareActivity.class);
             intent.putExtra(LogInSignUpActivity.USER_INTENT, user);
+            Log.d(TAG, String.valueOf(user == null));
             intent.putExtra(ShareActivity.UPLOAD_NUMBER_INTENT, numberOfUploads);
             startActivity(intent);
         });
@@ -142,18 +143,22 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         currentUser = auth.getCurrentUser();
         isLoggedIn = (currentUser != null);
-        if(currentUser != null) {
-            databaseReference = database.getReference(FIREBASE_DATABASE_REFERENCE).child(currentUser.getUid());
+        if(isLoggedIn) {
+            databaseReference = database.getReference(USER).child(currentUser.getUid());
+
+            Log.d(TAG, databaseReference.toString());
+            Log.d(TAG, currentUser.getUid());
 
             databaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     user = dataSnapshot.getValue(User.class);
+                    Log.d(TAG, String.valueOf(user == null));
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    Log.d(TAG, databaseError.toString());
                 }
             });
         }
@@ -173,26 +178,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.see_profile) {
+            Log.d(TAG, "see_profile");
             if (!isLoggedIn){
+                Log.d(TAG, "see_profile in if");
                 Intent intent = new Intent(this, LogInSignUpActivity.class);
                 startActivityForResult(intent, REQUEST_CODE);
             }
             else{
+                Log.d(TAG, "see_profile in else");
                 Intent intent = new Intent(this, ProfileActivity.class);
-                //TODO put some Extras
                 final User[] user = new User[1];
-                databaseReference = database.getReference(FIREBASE_DATABASE_REFERENCE).child(currentUser.getUid());
+                databaseReference = database.getReference().child(USER).child(currentUser.getUid());
                 databaseReference.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Log.d(TAG, "see_profile in onDataChange 1");
                         user[0] = dataSnapshot.getValue(User.class);
                         intent.putExtra(ProfileActivity.INTENT_USER_EXTRA, user[0]);
                         startActivity(intent);
+                        Log.d(TAG, "see_profile in onDataChange 2");
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
                         Toast.makeText(MainActivity.this, MainActivity.this.getResources().getString(R.string.error_reading_database), Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "see_profile in onCancelled");
                     }
                 });
             }
@@ -217,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 hasAccount = false;
             }
-//            Toast.makeText(this, String.valueOf(hasAccount), Toast.LENGTH_SHORT).show();
             if(!hasAccount) {
                 auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(task -> {
@@ -270,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                                Log.d(TAG, "signInWithEmail:success");
                                currentUser = auth.getCurrentUser();
                                isLoggedIn = currentUser != null;
-//                               Toast.makeText(this, String.valueOf(currentUser == null), Toast.LENGTH_SHORT).show();
+                               Log.d(TAG, String.valueOf(isLoggedIn));
                            }
                            else{
                                currentUser = null;
