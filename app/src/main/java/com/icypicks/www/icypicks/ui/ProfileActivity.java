@@ -1,6 +1,7 @@
 package com.icypicks.www.icypicks.ui;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -11,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,7 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String tempPhotoPath;
     private Toast toast;
-//    private String value;
+private RecyclerView userPostsRecyclerView;
 
 
     @BindView(R.id.profile_screen_image_view)
@@ -65,9 +65,6 @@ public class ProfileActivity extends AppCompatActivity {
     @BindView(R.id.info_text_view)
     TextView infoTextView;
 
-    @BindView(R.id.user_posts_recycler_view)
-    RecyclerView userPostsRecyclerView;
-
     @BindView(R.id.sign_out_text_view)
     TextView signOutTextView;
 
@@ -78,6 +75,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         ButterKnife.bind(this);
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            userPostsRecyclerView = findViewById(R.id.user_posts_recycler_view);
+        }
 
         if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -96,24 +97,22 @@ public class ProfileActivity extends AppCompatActivity {
                 if(user.getInfo() != null) {
                     infoTextView.setText(user.getInfo());
                 }
-                UserPostAdapter userPostAdapter = new UserPostAdapter(this, user.getUploads());
-                LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-                userPostsRecyclerView.setLayoutManager(layoutManager);
-                userPostsRecyclerView.setHasFixedSize(false);
-                userPostsRecyclerView.setAdapter(userPostAdapter);
+
+                if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    UserPostAdapter userPostAdapter = new UserPostAdapter(this, user.getUploads());
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+                    userPostsRecyclerView.setLayoutManager(layoutManager);
+                    userPostsRecyclerView.setHasFixedSize(false);
+                    userPostsRecyclerView.setAdapter(userPostAdapter);
+                }
             }
             if(FirebaseAuth.getInstance().getCurrentUser() != null) {
-                Log.d(TAG, "Not null");
                 StorageReference userStorageReference = FirebaseStorage.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("profile_image.jpg");
                 userStorageReference.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
                             Glide.with(getApplicationContext()).load(uri).into(profileScreenImageView);
-                            Log.d(TAG, "Success");
                         })
-                        .addOnFailureListener(e -> {
-                            e.printStackTrace();
-                            Log.d(TAG, "Failure");
-                        });
+                        .addOnFailureListener(Throwable::printStackTrace);
             }
         }
         else{
@@ -125,7 +124,6 @@ public class ProfileActivity extends AppCompatActivity {
         nameTextView.setOnClickListener(view -> getAlertDialog("name", "Name").show());
 
         favoriteFlavorTextView.setOnClickListener(view -> getAlertDialog("favoriteFlavor", "Favorite Flavor").show());
-        //TODO fill fields with user's data
 
         infoTextView.setOnClickListener(view -> getAlertDialog("info", "About Me").show());
 
@@ -227,5 +225,11 @@ public class ProfileActivity extends AppCompatActivity {
             BitmapUtils.deleteImageFile(this, tempPhotoPath);
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        NavUtils.navigateUpFromSameTask(this);
     }
 }

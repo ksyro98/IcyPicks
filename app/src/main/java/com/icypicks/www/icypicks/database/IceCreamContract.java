@@ -16,7 +16,7 @@ public class IceCreamContract {
         public static final String ICE_CREAM_FLAVOR = "ice_cream_flavor";
         public static final String ICE_CREAM_PLACE = "ice_cream_place_to_find";
         public static final String ICE_CREAM_DESCRIPTION = "ice_cream_description";
-        public static final String ICE_CREAM_IMAGE = "ice_cream_image";     //TODO consider saving bitmap file, url is useless without Internet
+        public static final String ICE_CREAM_IMAGE = "ice_cream_image";
         public static final String ICE_CREAM_UPLOAD_NUMBER = "ice_cream_upload_number";
     }
 }

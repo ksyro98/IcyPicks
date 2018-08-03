@@ -1,12 +1,16 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,7 +34,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.icypicks.www.icypicks.BuildConfig;
 import com.icypicks.www.icypicks.helpers.BitmapUtils;
 import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.java_classes.User;
@@ -57,12 +60,17 @@ public class ShareActivity extends AppCompatActivity implements
     private static final String FILE_PROVIDER_AUTHORITY = "com.icypicks.www.icypicks.fileprovider";
     public static final String UPLOAD_NUMBER_INTENT = "upload_number_intent_name";
     private static final String TAG = ShareActivity.class.getSimpleName();
+    private static final String BITMAP_KEY = "saved_instance_state_bitmap_key";
+    private static final String PLACE_KEY = "saved_instance_state_place_key";
+    private static final String BITMAP_FILE_KEY = "saved_instance_state_bitmap_file_key";
+    private static final int CAMERA_REQUEST_CODE = 314;
 
     private String tempPhotoPath;
     private Bitmap resultsBitmap;
     private FirebaseStorage firebaseStorage;
     private FirebaseAuth firebaseAuth;
     private String resultPlace;
+    private boolean permissionGranted;
 
     @BindView(R.id.ice_cream_image_view)
     ImageView iceCreamImageView;
@@ -86,6 +94,21 @@ public class ShareActivity extends AppCompatActivity implements
 
         ButterKnife.bind(this);
 
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(BITMAP_KEY)){
+                resultsBitmap = savedInstanceState.getParcelable(BITMAP_KEY);
+                if(resultsBitmap != null) {
+                    iceCreamImageView.setImageBitmap(resultsBitmap);
+                }
+            }
+            if(savedInstanceState.containsKey(PLACE_KEY)){
+                resultPlace = savedInstanceState.getString(PLACE_KEY);
+            }
+            if(savedInstanceState.containsKey(BITMAP_FILE_KEY)){
+                tempPhotoPath = savedInstanceState.getString(BITMAP_FILE_KEY);
+            }
+        }
+
         firebaseStorage = FirebaseStorage.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
@@ -94,7 +117,6 @@ public class ShareActivity extends AppCompatActivity implements
         int uploadNumber = 0;
         if(startIntent != null) {
             user = startIntent.getParcelableExtra(LogInSignUpActivity.USER_INTENT);
-            Log.d(TAG, String.valueOf(user == null));
             uploadNumber = startIntent.getIntExtra(UPLOAD_NUMBER_INTENT, 0);
         }
 
@@ -116,7 +138,7 @@ public class ShareActivity extends AppCompatActivity implements
 
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
 
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    getCameraPermission(takePictureIntent);
                 }
             }
         });
@@ -164,15 +186,15 @@ public class ShareActivity extends AppCompatActivity implements
                     DatabaseReference uploadNumberDatabaseReference = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid()).child("uploads");
                     uploadNumberDatabaseReference.setValue(finalUser.getUploads());
 
-                    NavUtils.navigateUpFromSameTask(this);
+                    onBackPressed();
                 }
                 else{
                     Toast.makeText(this, R.string.not_logged_in_error, Toast.LENGTH_SHORT).show();
                 }
 
-
-                //TODO doesn't work! (i think)
-                BitmapUtils.deleteImageFile(this, tempPhotoPath);
+                if(tempPhotoPath != null) {
+                    BitmapUtils.deleteImageFile(this, tempPhotoPath);
+                }
             }
             else{
                 Toast.makeText(this, R.string.empty_fields_in_sharing_error, Toast.LENGTH_SHORT).show();
@@ -181,9 +203,8 @@ public class ShareActivity extends AppCompatActivity implements
 
 
         locationButton.setOnClickListener(view -> {
-            String placeApiKey = BuildConfig.API_KEY;
+            locationButton.setEnabled(false);
             PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
 
             try {
                 startActivityForResult(builder.build(this), REQUEST_PLACE_PICKER);
@@ -209,12 +230,19 @@ public class ShareActivity extends AppCompatActivity implements
             iceCreamImageView.setImageBitmap(resultsBitmap);
         }
         else if((requestCode == REQUEST_PLACE_PICKER) && (resultCode == RESULT_OK)){
-            Place place = PlacePicker.getPlace(this, data);
-            resultPlace = String.valueOf(place.getLatLng().latitude)+"_"+String.valueOf(place.getLatLng().longitude);
-//            BitmapUtils.deleteImageFile(this, tempPhotoPath);
+            locationButton.setEnabled(true);
+            if(data != null) {
+                Place place = PlacePicker.getPlace(this, data);
+                if(place != null) {
+                    resultPlace = String.valueOf(place.getLatLng().latitude) + "_" + String.valueOf(place.getLatLng().longitude);
+                }
+
+            }
         }
         else{
-            BitmapUtils.deleteImageFile(this, tempPhotoPath);
+            if(tempPhotoPath != null) {
+                BitmapUtils.deleteImageFile(this, tempPhotoPath);
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -230,7 +258,7 @@ public class ShareActivity extends AppCompatActivity implements
 
         InputStream inputStream = new FileInputStream(file);
         UploadTask uploadTask = storageReference.putStream(inputStream);
-//        UploadTask uploadTask = storageReference.putString(dataToSend);
+
         uploadTask
                 .addOnFailureListener((exception) -> Toast.makeText(this, R.string.text_upload_failure, Toast.LENGTH_SHORT).show())
                 .addOnSuccessListener((taskSnapshot -> {
@@ -256,5 +284,38 @@ public class ShareActivity extends AppCompatActivity implements
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "Client Connection Failed.");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(PLACE_KEY, resultPlace);
+        outState.putParcelable(BITMAP_KEY, resultsBitmap);
+        outState.putString(BITMAP_FILE_KEY, tempPhotoPath);
+    }
+
+    private void getCameraPermission(Intent takePictureIntent) {
+        String[] permissions = {Manifest.permission.CAMERA};
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+        else {
+            ActivityCompat.requestPermissions(this, permissions, CAMERA_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionGranted = false;
+        if(requestCode == CAMERA_REQUEST_CODE){
+            if(grantResults.length > 0){
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                }
+            }
+            permissionGranted = true;
+        }
     }
 }

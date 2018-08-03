@@ -16,29 +16,3 @@
         android:textAlignment="center" />
 
 </FrameLayout>
-
-
-<!--<FrameLayout-->
-        <!--android:id="@+id/widget_frame_layout"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent">-->
-
-    <!--<FrameLayout-->
-        <!--android:id="@+id/empty_frame_layout"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:background="@android:color/white">-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/widget_item_empty_text_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/no_must_try_ice_creams"-->
-            <!--android:textColor="@color/colorPrimary"-->
-            <!--android:layout_gravity="center"-->
-            <!--android:textAlignment="center"-->
-            <!--android:textSize="24sp"/>-->
-
-    <!--</FrameLayout>-->
-
-<!--</FrameLayout>-->

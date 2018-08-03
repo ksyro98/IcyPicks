@@ -53,17 +53,13 @@ public class MustTryIceCreamAdapter extends RecyclerView.Adapter<MustTryIceCream
 
     @Override
     public void onBindViewHolder(@NonNull MustTryIceCreamViewHolder holder, int position) {
-//        Glide.with(context).load(mustTryIceCreams.get(position).getImageUrl()).into(holder.iceCreamImageView);
 
         byte[] imageBytes = mustTryIceCreams.get(position).getImageBytes();
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-//        Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
 
         holder.iceCreamImageView.setImageBitmap(bitmap);
-//        Glide.with(context).load(imageBytes).into(holder.iceCreamImageView);
 
         holder.iceCreamImageView.setOnClickListener(view -> {
-//            Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
             Intent intent = new Intent(context, DetailActivity.class);
             intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
             intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, mustTryIceCreams.get(position).getUploadNumber());

@@ -23,7 +23,6 @@ import butterknife.ButterKnife;
 
 public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.AllIceCreamViewHolder> {
 
-//    private ArrayList<IceCream> iceCreams;
     private Context context;
     private int numberOfImages;
 
@@ -45,7 +44,6 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull AllIceCreamViewHolder holder, int position) {
-        //put image from iceCreams.get(i) in iceCreamImageView
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if(firebaseUser != null) {
@@ -56,11 +54,13 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
         }
 
         holder.iceCreamImageView.setOnClickListener(view -> {
-            Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
-            Intent intent = new Intent(context, DetailActivity.class);
-            intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
-            intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, numberOfImages-position);
-            context.startActivity(intent);
+            if(holder.iceCreamImageView.getDrawable() != null) {
+                Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
+                Intent intent = new Intent(context, DetailActivity.class);
+                intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+                intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, numberOfImages - position);
+                context.startActivity(intent);
+            }
         });
     }
 

@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,7 +15,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,14 +59,17 @@ public class MainActivity extends AppCompatActivity {
     private User user;
     private AllIceCreamAdapter allIceCreamAdapter;
     private MustTryIceCreamAdapter mustTryIceCreamAdapter;
-    private int numberOfUploads;
+    private int numberOfUploads = -1;
 
     public static final String INFO_FILE_NAME = "info.txt";
     private static final int REQUEST_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String USER = "user";
     public static final String FILE_NAME = "image_file_name.txt";
+    private static final String FRAGMENT_SELECTION_KEY = "saved_instance_fragment_selection_key";
+
     private Fragment fragment;
+    private Toast loadingToast;
 
     @BindView(R.id.fragment_container)
     FrameLayout container;
@@ -73,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.bottom_navigation_view)
     BottomNavigationView bottomNavigationView;
 
+    @BindView(R.id.layout_container)
+    ConstraintLayout layoutContainer;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,9 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        //TODO change this
         allIceCreamAdapter = new AllIceCreamAdapter(this, numberOfUploads);
-
 
         bottomNavigationView.setOnNavigationItemSelectedListener(menuItem->{
 
@@ -104,8 +115,19 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        fragment = new AllFragment();
-        ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
+        if(savedInstanceState != null && savedInstanceState.containsKey(FRAGMENT_SELECTION_KEY)){
+            if(savedInstanceState.getBoolean(FRAGMENT_SELECTION_KEY)){
+                fragment = new AllFragment();
+                ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
+            }
+            else{
+                fragment = new MustTryFragment();
+            }
+        }
+        else {
+            fragment = new AllFragment();
+            ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
+        }
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .add(R.id.fragment_container, fragment)
@@ -114,10 +136,11 @@ public class MainActivity extends AppCompatActivity {
         shareFab.setOnClickListener(view->{
             Intent intent = new Intent(this, ShareActivity.class);
             intent.putExtra(LogInSignUpActivity.USER_INTENT, user);
-            Log.d(TAG, String.valueOf(user == null));
             intent.putExtra(ShareActivity.UPLOAD_NUMBER_INTENT, numberOfUploads);
             startActivity(intent);
         });
+
+        hideUI();
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -129,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 if(allIceCreamAdapter != null) {
                     allIceCreamAdapter.setNumberOfImages(numberOfUploads);
                 }
+                showUI();
             }
 
             @Override
@@ -146,14 +170,10 @@ public class MainActivity extends AppCompatActivity {
         if(isLoggedIn) {
             databaseReference = database.getReference(USER).child(currentUser.getUid());
 
-            Log.d(TAG, databaseReference.toString());
-            Log.d(TAG, currentUser.getUid());
-
             databaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     user = dataSnapshot.getValue(User.class);
-                    Log.d(TAG, String.valueOf(user == null));
                 }
 
                 @Override
@@ -161,6 +181,10 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, databaseError.toString());
                 }
             });
+
+            if(fragment instanceof MustTryFragment){
+                ((MustTryFragment) fragment).loadData();
+            }
         }
     }
 
@@ -178,31 +202,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.see_profile) {
-            Log.d(TAG, "see_profile");
             if (!isLoggedIn){
-                Log.d(TAG, "see_profile in if");
                 Intent intent = new Intent(this, LogInSignUpActivity.class);
                 startActivityForResult(intent, REQUEST_CODE);
             }
             else{
-                Log.d(TAG, "see_profile in else");
                 Intent intent = new Intent(this, ProfileActivity.class);
                 final User[] user = new User[1];
                 databaseReference = database.getReference().child(USER).child(currentUser.getUid());
                 databaseReference.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "see_profile in onDataChange 1");
                         user[0] = dataSnapshot.getValue(User.class);
                         intent.putExtra(ProfileActivity.INTENT_USER_EXTRA, user[0]);
                         startActivity(intent);
-                        Log.d(TAG, "see_profile in onDataChange 2");
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(MainActivity.this, MainActivity.this.getResources().getString(R.string.error_reading_database), Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "see_profile in onCancelled");
+                        hideUI();
                     }
                 });
             }
@@ -251,7 +269,6 @@ public class MainActivity extends AppCompatActivity {
                                 databaseReference.setValue(user);
 
                                 StorageReference userStorageReference = FirebaseStorage.getInstance().getReference().child("users").child(currentUser.getUid()).child("profile_image.jpg");
-//                                Bitmap bitmap = (Bitmap) data.getParcelableExtra(LogInSignUpActivity.PROFILE_IMAGE_INTENT);
                                 Bitmap bitmap = null;
                                 try {
                                     bitmap = BitmapFactory.decodeStream(this.openFileInput(FILE_NAME));
@@ -264,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 File file = new File(this.getCacheDir(), FILE_NAME);
                                 file.delete();
-                                //code was taken from stack overflow post: https://stackoverflow.com/questions/4989182/converting-java-bitmap-to-byte-array#4989543
+                                loadUiOnLogIn();
                             }
                             else {
                                 Log.d(TAG, "createUserWithEmail:failure", task.getException());
@@ -279,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
                                Log.d(TAG, "signInWithEmail:success");
                                currentUser = auth.getCurrentUser();
                                isLoggedIn = currentUser != null;
-                               Log.d(TAG, String.valueOf(isLoggedIn));
+                               loadUiOnLogIn();
                            }
                            else{
                                currentUser = null;
@@ -291,17 +308,51 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(fragment instanceof AllFragment) {
+            outState.putBoolean(FRAGMENT_SELECTION_KEY, true);
+        }
+        else{
+            outState.putBoolean(FRAGMENT_SELECTION_KEY, false);
+        }
+    }
+
+    private void loadUiOnLogIn(){
+        currentUser = auth.getCurrentUser();
+        databaseReference = database.getReference("numberOfUploads");
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                numberOfUploads = Integer.parseInt(dataSnapshot.getValue(String.class));
+                allIceCreamAdapter.setNumberOfImages(numberOfUploads);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d(TAG, databaseError.toString());
+            }
+        });
+        showUI();
+    }
+
+    private void showUI(){
+        layoutContainer.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
+        loadingToast = null;
+    }
+
+    private void hideUI(){
+        layoutContainer.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        loadingToast = Toast.makeText(this, R.string.loading_toast, Toast.LENGTH_LONG);
+        new Handler().postDelayed(() -> runOnUiThread(() -> {
+            if(loadingToast != null) {
+                loadingToast.show();
+            }
+        }), 30000);
+    }
 }
-
-//TODO list:
-//widget
-//accessibility
-//rotations
-//signed api
-//app crashes when user log ins and then tries to add something to the SQLite database
-//progress bar
-//delete from SQLite    (almost done, when something is deleted the fragment isn't refreshed)
-//change image from button
-//add list of posts
-
-//TODO message Nick to tell him about Cant-communicate.txt

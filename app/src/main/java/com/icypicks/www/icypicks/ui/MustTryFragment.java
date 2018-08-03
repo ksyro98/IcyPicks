@@ -1,19 +1,21 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.icypicks.www.icypicks.R;
-import com.icypicks.www.icypicks.database.IceCreamContentProvider;
 import com.icypicks.www.icypicks.database.IceCreamContract;
 import com.icypicks.www.icypicks.java_classes.IceCream;
 
@@ -23,9 +25,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MustTryFragment extends Fragment {
+public class MustTryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = MustTryIceCreamAdapter.class.getSimpleName();
+    private static final String TAG = MustTryFragment.class.getSimpleName();
+    private static final int MUST_TRY_LOADER = 2;
 
     @BindView(R.id.must_try_ice_cream_recycler_view)
     RecyclerView mustTryRecyclerView;
@@ -52,56 +55,71 @@ public class MustTryFragment extends Fragment {
         mustTryRecyclerView.setHasFixedSize(false);
         mustTryRecyclerView.setAdapter(mustTryIceCreamAdapter);
 
-        new IceCreamTask().execute();
+        loadData();
 
         return view;
     }
 
-//    public void setIceCreamAdapter(MustTryIceCreamAdapter mustTryIceCreamAdapter) {
-//        this.mustTryIceCreamAdapter = mustTryIceCreamAdapter;
-//    }
-
-    //TODO change that :(
-    class IceCreamTask extends AsyncTask<Void, Void, Cursor> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Cursor doInBackground(Void... voids) {
-            if(getContext() != null) {
-                return getContext().getContentResolver().query(IceCreamContract.IceCreamEntry.CONTENT_URI, null, null, null, null);
+    public void loadData(){
+        if(getActivity() != null) {
+            LoaderManager loaderManager = getActivity().getSupportLoaderManager();
+            Loader<Cursor> mustTryLoader = loaderManager.getLoader(MUST_TRY_LOADER);
+            if(mustTryLoader == null){
+                loaderManager.initLoader(MUST_TRY_LOADER, null, this);
             }
             else{
-                return null;
+                loaderManager.restartLoader(MUST_TRY_LOADER, null, this);
             }
-        }
-
-        @Override
-        protected void onPostExecute(Cursor cursor) {
-            super.onPostExecute(cursor);
-            if(cursor == null || !cursor.moveToFirst()){
-                return;
-            }
-
-            do{
-                String flavor = cursor.getString(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_FLAVOR));
-                String place = cursor.getString(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_PLACE));
-                String description = cursor.getString(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_DESCRIPTION));
-                byte[] imageBytes = cursor.getBlob(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_IMAGE));
-                int uploadNumber = cursor.getInt(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_UPLOAD_NUMBER));
-                IceCream iceCream = new IceCream(flavor, place, description, null);
-                iceCream.setUploadNumber(uploadNumber);
-                iceCream.setImageBytes(imageBytes);
-                mustTryIceCreams.add(iceCream);
-            }while (cursor.moveToNext());
-
-            mustTryIceCreamAdapter.notifyDataSetChanged();
         }
     }
 
-    public void notifyAdapterDataChange(){
-        mustTryIceCreamAdapter.notifyDataSetChanged();;
+    @SuppressLint("StaticFieldLeak")
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        return new AsyncTaskLoader<Cursor>(getContext()) {
+            @Override
+            protected void onStartLoading() {
+                forceLoad();
+                super.onStartLoading();
+            }
+
+            @Nullable
+            @Override
+            public Cursor loadInBackground() {
+                return getContext().getContentResolver().query(IceCreamContract.IceCreamEntry.CONTENT_URI, null, null, null, null);
+            }
+        };
     }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        if(data == null || !data.moveToFirst()){
+            return;
+        }
+
+        for(int i=mustTryIceCreams.size()-1; i>=0; i--){
+            mustTryIceCreams.remove(i);
+        }
+
+        do{
+            String flavor = data.getString(data.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_FLAVOR));
+            String place = data.getString(data.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_PLACE));
+            String description = data.getString(data.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_DESCRIPTION));
+            byte[] imageBytes = data.getBlob(data.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_IMAGE));
+            int uploadNumber = data.getInt(data.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_UPLOAD_NUMBER));
+            IceCream iceCream = new IceCream(flavor, place, description, null);
+            iceCream.setUploadNumber(uploadNumber);
+            iceCream.setImageBytes(imageBytes);
+            mustTryIceCreams.add(iceCream);
+        }while (data.moveToNext());
+
+        mustTryIceCreamAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
+    }
+
 }

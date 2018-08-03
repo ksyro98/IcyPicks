@@ -16,7 +16,6 @@ public class IceCreamContentProvider extends ContentProvider {
     private IceCreamDBHelper iceCreamDBHelper;
 
     private static final int ICE_CREAMS = 100;
-    //TODO use this too
     private static final int ICE_CREAM_WITH_UPLOAD_NUMBER = 101;
     private static final String TAG = IceCreamContentProvider.class.getSimpleName();
 

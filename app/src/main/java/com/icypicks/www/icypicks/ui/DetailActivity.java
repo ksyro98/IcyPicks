@@ -31,7 +31,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.icypicks.www.icypicks.R;
-import com.icypicks.www.icypicks.database.IceCreamContentProvider;
 import com.icypicks.www.icypicks.database.IceCreamContract;
 import com.icypicks.www.icypicks.java_classes.IceCream;
 
@@ -71,8 +70,6 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         ButterKnife.bind(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-//        toolbar.setTitle(getString(R.string.app_name));
-//        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
 
         Intent intent = getIntent();
         if(intent != null){
@@ -93,29 +90,6 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
                     .addOnSuccessListener(uri -> Glide.with(getApplicationContext()).load(uri).into(detailIceCreamImageView))
                     .addOnFailureListener(Throwable::printStackTrace);
 
-            StorageReference descriptionStorageReference = storageReference.child("description.txt");
-            File descriptionFile = new File(this.getCacheDir(), "description.txt");
-            descriptionStorageReference.getFile(descriptionFile)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        try {
-                            FileReader fileReader = new FileReader(descriptionFile);
-                            BufferedReader bufferedReader = new BufferedReader(fileReader);
-                            String description = bufferedReader.readLine();
-                            descriptionTextView.setText(description);
-                            iceCream.setDescription(description);
-                            bufferedReader.close();
-                            fileReader.close(); } catch (IOException e){
-                            e.printStackTrace();
-                            descriptionTextView.setText(R.string.error_loading_description);
-                        }
-                        descriptionFile.delete();
-                    })
-                    .addOnFailureListener(e -> {
-                        e.printStackTrace();
-                        descriptionTextView.setText(R.string.error_loading_description);
-                        descriptionFile.delete();
-                    });
-
             StorageReference flavorStorageReference = storageReference.child("flavor.txt");
             File flavorFile = new File(this.getCacheDir(), "flavor.txt");
             flavorStorageReference.getFile(flavorFile)
@@ -128,11 +102,10 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
                             iceCream.setFlavor(flavor);
                             bufferedReader.close();
                             fileReader.close();
-//                            Toast.makeText(this, "Will I see this?", Toast.LENGTH_SHORT).show();
-//                            Toast.makeText(this, flavor, Toast.LENGTH_SHORT).show();
                         }
                         catch (IOException exception){
                             exception.printStackTrace();
+                            Log.d(TAG, exception.toString());
                             toolbar.setTitle(R.string.app_name);
                         }
                         flavorFile.delete();
@@ -140,10 +113,37 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
                     })
                     .addOnFailureListener(exception -> {
                         exception.printStackTrace();
+                        Log.d(TAG, exception.toString());
                         toolbar.setTitle(R.string.app_name);
                         flavorFile.delete();
                         setSupportActionBar(toolbar);
                     });
+
+            StorageReference descriptionStorageReference = storageReference.child("description.txt");
+            File descriptionFile = new File(this.getCacheDir(), "description.txt");
+            descriptionStorageReference.getFile(descriptionFile)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        try {
+                            FileReader fileReader = new FileReader(descriptionFile);
+                            BufferedReader bufferedReader = new BufferedReader(fileReader);
+                            String description = bufferedReader.readLine();
+                            descriptionTextView.setText(description);
+                            iceCream.setDescription(description);
+                            bufferedReader.close();
+                            fileReader.close();
+                        }
+                        catch (IOException e){
+                            e.printStackTrace();
+                            descriptionTextView.setText(R.string.error_loading_description);
+                        }
+                        descriptionFile.delete();
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        descriptionTextView.setText(R.string.error_loading_description);
+                        descriptionFile.delete();
+                    });
+
 
             StorageReference placeStorageReference = storageReference.child("place.txt");
             File placeFile = new File(this.getCacheDir(), "place.txt");
@@ -157,7 +157,6 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
                             bufferedReader.close();
                             fileReader.close();
                             mapView.getMapAsync(this);
-                            Log.d(TAG, "Map Async should start here.");
                         }
                         catch (IOException exception){
                             exception.printStackTrace();
@@ -219,10 +218,7 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         if(item.getItemId() == R.id.add_to_must_try){
             if(!isMustTree) {
                 if(iceCream.getFlavor() == null || iceCream.getPlace() == null || iceCream.getDescription() == null || iceCream.getImageBytes() == null){
-                    Toast.makeText(this, "Something is null", Toast.LENGTH_SHORT).show();
-                    if(iceCream.getPlace() == null){
-                        Toast.makeText(this, "Is it the Flavor?", Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(this, R.string.write_to_database_error, Toast.LENGTH_SHORT).show();
                 }
                 else {
                     ContentValues contentValues = new ContentValues();

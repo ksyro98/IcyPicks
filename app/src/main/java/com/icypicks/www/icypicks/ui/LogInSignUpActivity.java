@@ -8,7 +8,6 @@ import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.helpers.BitmapUtils;
 import com.icypicks.www.icypicks.java_classes.User;
@@ -27,7 +25,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -38,16 +35,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class LogInSignUpActivity extends AppCompatActivity {
-    public static final String ACCOUNT_INFO = "account_info_first_time";
     public static final String EMAIL_INTENT = "email_name_for_intent";
     public static final String PASSWORD_INTENT = "password_name_for_intent";
-    public static final String PROFILE_IMAGE_INTENT = "profile_image_name_for_intent";
-    public static final String NAME_INTENT = "name_name_for_intent";
-    public static final String FLAVOR_INTENT = "flavor_name_for_intent";
     public static final String USER_INTENT = "user_name_for_intent";
     private static final String FILE_PROVIDER_AUTHORITY = "com.icypicks.www.icypicks.fileprovider";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final String TAG = LogInSignUpActivity.class.getSimpleName();
 
     private boolean hasAccount;
     private String tempPhotoPath;
@@ -69,15 +61,12 @@ public class LogInSignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_log_in_sign_up);
         ButterKnife.bind(this);
 
-
-        Intent intent = getIntent();
-
         View.OnClickListener onClick = view ->{
             if(allEditTextValuesAreValid()){
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra(EMAIL_INTENT, emailEditText.getText().toString());
                 resultIntent.putExtra(PASSWORD_INTENT, passwordEditText.getText().toString());
-//                resultIntent.putExtra(PROFILE_IMAGE_INTENT, resultsBitmap);
+
                 //code was taken from Stack Overflow post: https://stackoverflow.com/questions/4352172/how-do-you-pass-images-bitmaps-between-android-activities-using-bundles#4352194
                 try{
                     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -189,7 +178,6 @@ public class LogInSignUpActivity extends AppCompatActivity {
                 recreate();
             });
         }
-        Log.d(TAG, "onCreate");
     }
 
     private boolean allEditTextValuesAreValid(){
