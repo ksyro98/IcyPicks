@@ -21,6 +21,10 @@ import com.icypicks.www.icypicks.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * This adapter is used to bind the recycler view with all the ice creams posted.
+ * Ice cream's information are being retrieved from the firebase storage in the onBindView method
+ */
 public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.AllIceCreamViewHolder> {
 
     private Context context;
@@ -49,7 +53,7 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
         if(firebaseUser != null) {
             StorageReference storageReference = firebaseStorage.getReference().child(String.valueOf(numberOfImages-position)).child("image.jpg");
             storageReference.getDownloadUrl()
-                    .addOnSuccessListener(uri -> Glide.with(context.getApplicationContext()).asBitmap().load(uri).into(holder.iceCreamImageView))
+                    .addOnSuccessListener(uri -> Glide.with(context.getApplicationContext()).load(uri).thumbnail(Glide.with(context.getApplicationContext()).load(R.drawable.progress_bar_placeholder)).into(holder.iceCreamImageView))
                     .addOnFailureListener(Throwable::printStackTrace);
         }
 

@@ -29,12 +29,19 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+
+/**
+ * This adapter is used to bind the recycler view in the user profile with the ice creams he uploaded.
+ * The data are retrieved from the firebase storage in onBindView.
+ * The selection of the items is being done from the contents of the uploadNumbers ArrayList
+ * that contains the upload numbers of the ice creams the user has uploaded.
+ */
 public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPostViewHolder>{
 
     private Context context;
     private ArrayList<Integer> uploadNumbers;
 
-    public UserPostAdapter(Context context, ArrayList<Integer> uploadNumbers){
+    UserPostAdapter(Context context, ArrayList<Integer> uploadNumbers){
         this.context = context;
         this.uploadNumbers = uploadNumbers;
     }
@@ -57,7 +64,7 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPo
         if(firebaseUser != null) {
             StorageReference storageReference = firebaseStorage.getReference(String.valueOf(uploadNumbers.get(position)));
             storageReference.child("image.jpg").getDownloadUrl()
-                    .addOnSuccessListener(uri -> Glide.with(context).load(uri).into(holder.userPostIceCreamImageView))
+                    .addOnSuccessListener(uri -> Glide.with(context.getApplicationContext()).load(uri).thumbnail(Glide.with(context.getApplicationContext()).load(R.drawable.progress_bar_placeholder)).into(holder.userPostIceCreamImageView))
                     .addOnFailureListener(Throwable::printStackTrace);
 
             File flavorFile = new File(context.getCacheDir(), "user_post_flavor.txt");

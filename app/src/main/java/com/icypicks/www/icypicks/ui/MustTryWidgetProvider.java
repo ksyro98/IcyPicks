@@ -1,5 +1,6 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -11,12 +12,16 @@ import android.widget.RemoteViews;
 import com.icypicks.www.icypicks.R;
 
 /**
- * Implementation of App Widget functionality.
+ * This is an AppWidgetProvider used to update the widgets.
  */
 public class MustTryWidgetProvider extends AppWidgetProvider {
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.must_try_widget_layout);
+
+        Intent intent = new Intent(context, DetailActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteViews.setPendingIntentTemplate(R.id.must_try_widget_list_view, pendingIntent);
 
         Intent adapterIntent = new Intent(context, ListWidgetService.class);
         adapterIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);

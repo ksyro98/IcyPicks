@@ -46,19 +46,21 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+
+/**
+ * This is the MainActivity of the app.
+ * It contains 2 fragments one for all the ice crams and one for the ice creams in the must-try list
+ * and the user can navigate from one to another using a bottom navigation bar.
+ * In addition in this activity the user authentication is being done.
+ */
 public class MainActivity extends AppCompatActivity {
-    private ArrayList<IceCream> iceCreams;
-    private StorageReference storageReference;
     private FirebaseAuth auth;
     private boolean isLoggedIn;
-    private boolean hasAccount = false;
     private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
-    private FirebaseStorage storage;
     private User user;
     private AllIceCreamAdapter allIceCreamAdapter;
-    private MustTryIceCreamAdapter mustTryIceCreamAdapter;
     private int numberOfUploads = -1;
 
     public static final String INFO_FILE_NAME = "info.txt";
@@ -234,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
             String email = data.getStringExtra(LogInSignUpActivity.EMAIL_INTENT);
             String password = data.getStringExtra(LogInSignUpActivity.PASSWORD_INTENT);
             File infoFile = new File(this.getCacheDir(), INFO_FILE_NAME);
+            boolean hasAccount = false;
             try {
                 FileReader fileReader = new FileReader(infoFile);
                 BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -349,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         layoutContainer.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         loadingToast = Toast.makeText(this, R.string.loading_toast, Toast.LENGTH_LONG);
+        //if the ui is hidden for 3 seconds, show a warning message.
         new Handler().postDelayed(() -> runOnUiThread(() -> {
             if(loadingToast != null) {
                 loadingToast.show();

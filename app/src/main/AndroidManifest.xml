@@ -22,7 +22,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAT95e8oXmez3YTGkkULWyXgf0KBl9Ocuo" />
+            android:value="" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -60,7 +60,7 @@
         <provider
             android:name=".database.IceCreamContentProvider"
             android:authorities="com.icypicks.www.icypicks"
-            android:exported="false"/>
+            android:exported="true"/>
 
         <receiver android:name=".ui.MustTryWidgetProvider">
             <intent-filter>
@@ -70,13 +70,12 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/must_try_widget_info"/>
-                <!--android:resource="@xml/must_try_widget_info" />-->
         </receiver>
 
         <service
             android:name=".ui.ListWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
-            android:exported="false" />
+            android:exported="false"/>
     </application>
 
 </manifest>

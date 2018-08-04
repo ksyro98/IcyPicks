@@ -24,10 +24,13 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
+/**
+ * This fragment is used to show the ice creams in the must-try list with a recycler viwe.
+ * Those items are also saved in the SQLite database and they are selected by the user.
+ * The ice creams are also retrieved from the database in this activity and they are loaded in an ArrayList.
+ */
 public class MustTryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = MustTryFragment.class.getSimpleName();
     private static final int MUST_TRY_LOADER = 2;
 
     @BindView(R.id.must_try_ice_cream_recycler_view)

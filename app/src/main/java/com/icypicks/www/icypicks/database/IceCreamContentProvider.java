@@ -10,14 +10,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+/**
+ * This Content Provider is used to query the database, insert data to it and remove data from it.
+ */
 public class IceCreamContentProvider extends ContentProvider {
     private IceCreamDBHelper iceCreamDBHelper;
 
     private static final int ICE_CREAMS = 100;
     private static final int ICE_CREAM_WITH_UPLOAD_NUMBER = 101;
-    private static final String TAG = IceCreamContentProvider.class.getSimpleName();
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
@@ -25,7 +26,8 @@ public class IceCreamContentProvider extends ContentProvider {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         uriMatcher.addURI(IceCreamContract.AUTHORITY, IceCreamContract.PATH_ICE_CREAM, ICE_CREAMS);
-        uriMatcher.addURI(IceCreamContract.AUTHORITY, IceCreamContract.PATH_ICE_CREAM + "/#", ICE_CREAM_WITH_UPLOAD_NUMBER);
+        uriMatcher.addURI(IceCreamContract.AUTHORITY, IceCreamContract.PATH_ICE_CREAM + "/#",
+                ICE_CREAM_WITH_UPLOAD_NUMBER);
 
         return uriMatcher;
     }
@@ -39,7 +41,8 @@ public class IceCreamContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
+                        @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         final SQLiteDatabase sqLiteDatabase = iceCreamDBHelper.getReadableDatabase();
         int match = uriMatcher.match(uri);
 
@@ -47,14 +50,19 @@ public class IceCreamContentProvider extends ContentProvider {
 
         switch (match){
             case ICE_CREAMS:
-                cursor = sqLiteDatabase.query(IceCreamContract.IceCreamEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+                cursor = sqLiteDatabase.query(IceCreamContract.IceCreamEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
         return cursor;
-//        return null;
     }
 
     @Nullable
@@ -107,7 +115,8 @@ public class IceCreamContentProvider extends ContentProvider {
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
         return 0;
     }
 }

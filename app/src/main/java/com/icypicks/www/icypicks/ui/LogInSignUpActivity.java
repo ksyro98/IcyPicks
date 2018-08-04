@@ -1,10 +1,15 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,12 +39,18 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * This activity is used when a user wants to log in or to sign up to the app.
+ * This activity is started from the MainActivity and is used only to get the user information
+ * (such as email, password), the firebase authentication is done from the MainActivity.
+ */
 public class LogInSignUpActivity extends AppCompatActivity {
     public static final String EMAIL_INTENT = "email_name_for_intent";
     public static final String PASSWORD_INTENT = "password_name_for_intent";
     public static final String USER_INTENT = "user_name_for_intent";
     private static final String FILE_PROVIDER_AUTHORITY = "com.icypicks.www.icypicks.fileprovider";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int CAMERA_REQUEST_CODE = 314;
 
     private boolean hasAccount;
     private String tempPhotoPath;
@@ -81,7 +92,8 @@ public class LogInSignUpActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 if(!hasAccount) {
-                    User user = new User(nameEditText.getText().toString(), flavorEditText.getText().toString(), emailEditText.getText().toString(), null, new ArrayList<>());
+                    User user = new User(nameEditText.getText().toString(), flavorEditText.getText().toString(),
+                            emailEditText.getText().toString(), null, new ArrayList<>());
                     resultIntent.putExtra(USER_INTENT, user);
                 }
                 setResult(RESULT_OK, resultIntent);
@@ -102,7 +114,8 @@ public class LogInSignUpActivity extends AppCompatActivity {
             hasAccount = false;
         }
         if(!hasAccount){
-            FrameLayout signUpLayout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.sign_up_screen, containerFrameLayout, true);
+            FrameLayout signUpLayout = (FrameLayout) LayoutInflater.from(getApplicationContext())
+                    .inflate(R.layout.sign_up_screen, containerFrameLayout, true);
             profileImageView = (ImageView) signUpLayout.findViewById(R.id.profile_image_view);
             nameEditText = (EditText) signUpLayout.findViewById(R.id.name_edi_text);
             flavorEditText = (EditText) signUpLayout.findViewById(R.id.favorite_flavor_edit_text);
@@ -130,7 +143,8 @@ public class LogInSignUpActivity extends AppCompatActivity {
 
                         Uri photoUri = FileProvider.getUriForFile(this, FILE_PROVIDER_AUTHORITY, photoFile);
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+//                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                        getCameraPermission(takePictureIntent);
                     }
                 }
             });
@@ -154,7 +168,8 @@ public class LogInSignUpActivity extends AppCompatActivity {
             });
         }
         else{
-            FrameLayout signUpLayout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.log_in_screen, containerFrameLayout, true);
+            FrameLayout signUpLayout = (FrameLayout) LayoutInflater.from(getApplicationContext())
+                    .inflate(R.layout.log_in_screen, containerFrameLayout, true);
 
             emailEditText = (EditText) signUpLayout.findViewById(R.id.email_edit_text);
             passwordEditText = (EditText) signUpLayout.findViewById(R.id.password_edit_text);
@@ -182,7 +197,11 @@ public class LogInSignUpActivity extends AppCompatActivity {
 
     private boolean allEditTextValuesAreValid(){
         if(!hasAccount){
-            if(!"".equals(nameEditText.getText().toString()) && !"".equals(flavorEditText.getText().toString()) && !"".equals(emailEditText.getText().toString()) && !"".equals(passwordEditText.getText().toString()) && !"".equals(repeatPasswordEditText.getText().toString())){
+            if(!"".equals(nameEditText.getText().toString())
+                    && !"".equals(flavorEditText.getText().toString())
+                    && !"".equals(emailEditText.getText().toString())
+                    && !"".equals(passwordEditText.getText().toString())
+                    && !"".equals(repeatPasswordEditText.getText().toString())){
                 if(passwordEditText.length() < 8){
                     Toast.makeText(this, R.string.password_length_error, Toast.LENGTH_SHORT).show();
                     return false;
@@ -221,5 +240,28 @@ public class LogInSignUpActivity extends AppCompatActivity {
             BitmapUtils.deleteImageFile(this, tempPhotoPath);
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void getCameraPermission(Intent takePictureIntent) {
+        String[] permissions = {Manifest.permission.CAMERA};
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+        else {
+            ActivityCompat.requestPermissions(this, permissions, CAMERA_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == CAMERA_REQUEST_CODE){
+            if(grantResults.length > 0){
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

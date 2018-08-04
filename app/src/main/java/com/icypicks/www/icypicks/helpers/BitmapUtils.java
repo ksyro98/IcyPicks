@@ -1,13 +1,8 @@
 package com.icypicks.www.icypicks.helpers;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -22,6 +17,8 @@ import java.util.Locale;
 
 
 /**
+ * This class contains methods that help us process bitmaps.
+ * This class contains methods that help us process bitmaps.
  * The code for this class was take from the emojifier app
  */
 public class BitmapUtils {

@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * This fragment is used to show all ice creams posted in a recycler view.
  */
 public class AllFragment extends Fragment {
 

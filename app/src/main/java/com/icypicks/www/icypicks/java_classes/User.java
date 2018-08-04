@@ -6,6 +6,14 @@ import android.os.Parcelable;
 
 import java.util.ArrayList;
 
+/**
+ * This class represents a user.
+ * Each user has a name, a favorite ice cream flavor, an email address, some info
+ * and an ArrayList containing his uploads (the uploadNumber of the ice cream class)
+ * Each user also has a profile image, but the profile image is saved in the firebase storage.
+ * (instead of the firebase database), so it the User class has no field for it.
+ * Each user also has a user id, given to him from the firebase authentication.
+ */
 public class User implements Parcelable {
     private String name;
     private String favoriteFlavor;

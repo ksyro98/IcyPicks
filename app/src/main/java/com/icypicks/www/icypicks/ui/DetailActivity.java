@@ -1,7 +1,6 @@
 package com.icypicks.www.icypicks.ui;
 
 import android.annotation.SuppressLint;
-import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -43,6 +42,11 @@ import java.io.IOException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * This activity contains more information about an ice cream.
+ * In the onCreate method the information are retrieved from the firebase storage
+ * and they are being shown in activity's UI (except the image that is passed as an intent extra).
+ */
 public class DetailActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor> {
     public static final String INTENT_IMAGE_EXTRA = "intent_image_extra_for_details";
     public static final String INTENT_POSITION_EXTRA = "intent_position_extra_for_details";
@@ -194,6 +198,11 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         mapView.onLowMemory();
     }
 
+    /**
+     * If the item isn't in the database the icon of the menu button is a "+"
+     * and if it is the icon of the menu button a "-".
+     * This is why the SQLite database is queried in the onCreateOptionMenu using a loader.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
@@ -213,6 +222,10 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * When the user clicks the button in the option menu the ice cream is saved in the SQLite database
+     * or it is removed from it if it was already there.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.add_to_must_try){

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * This helper class is used to create and update the SQLite database.
+ */
 public class IceCreamDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "iceCreamDatabase.db";

@@ -3,7 +3,8 @@ package com.icypicks.www.icypicks.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.Parcelable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -14,9 +15,10 @@ import com.icypicks.www.icypicks.java_classes.IceCream;
 
 import java.util.ArrayList;
 
+/**
+ * This is a service to load a widget with data.
+ */
 public class ListWidgetService extends RemoteViewsService {
-
-    public static final String INTENT_ICE_CREAM = "ice_creams_widget";
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -42,9 +44,11 @@ public class ListWidgetService extends RemoteViewsService {
             if (context != null) {
                 Cursor cursor = context.getContentResolver().query(IceCreamContract.IceCreamEntry.CONTENT_URI, null, null, null, null);
 
+                Log.d("wTag", "onDataSetChanged before");
                 if (cursor == null || !cursor.moveToFirst()) {
                     return;
                 }
+                Log.d("wTag", "onDataSetChanged after");
 
                 do {
                     String flavor = cursor.getString(cursor.getColumnIndex(IceCreamContract.IceCreamEntry.ICE_CREAM_FLAVOR));
@@ -60,7 +64,6 @@ public class ListWidgetService extends RemoteViewsService {
 
                 cursor.close();
             }
-
         }
 
         @Override
@@ -70,10 +73,10 @@ public class ListWidgetService extends RemoteViewsService {
 
         @Override
         public int getCount() {
-        if(widgetMustTryIceCreams != null){
-            return widgetMustTryIceCreams.size();
-        }
-        return 0;
+            if(widgetMustTryIceCreams != null){
+                return widgetMustTryIceCreams.size();
+            }
+            return 0;
         }
 
         @Override
@@ -83,8 +86,11 @@ public class ListWidgetService extends RemoteViewsService {
             if(widgetMustTryIceCreams != null && widgetMustTryIceCreams.size() != 0){
                 remoteViews.setTextViewText(R.id.widget_item_text_view, widgetMustTryIceCreams.get(position).getFlavor());
                 Intent fillIntent = new Intent();
-                fillIntent.putExtra(ListWidgetService.INTENT_ICE_CREAM, (Parcelable) widgetMustTryIceCreams.get(position));
-                remoteViews.setOnClickFillInIntent(R.id.widget_item_text_view, fillIntent);
+                byte[] bytes = widgetMustTryIceCreams.get(position).getImageBytes();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                fillIntent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+                fillIntent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, widgetMustTryIceCreams.get(position).getUploadNumber());
+                remoteViews.setOnClickFillInIntent(R.id.widget_item_linear_layout, fillIntent);
             }
 
             return remoteViews;

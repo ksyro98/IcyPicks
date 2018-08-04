@@ -1,11 +1,16 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,15 +44,20 @@ import butterknife.ButterKnife;
 
 import static android.widget.Toast.makeText;
 
+/**
+ * This activity is used to show the profile information of a user.
+ * If the user clicks on one of them he can change its value.
+ * In this activity the user can also see all his posts in a recycler view.
+ */
 public class ProfileActivity extends AppCompatActivity {
     public static final String INTENT_USER_EXTRA = "intent_user_extra_for_profile";
-    private static final String TAG = ProfileActivity.class.getSimpleName();
     private static final String FILE_PROVIDER_AUTHORITY = "com.icypicks.www.icypicks.fileprovider";
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int CAMERA_REQUEST_CODE = 314;
 
     private String tempPhotoPath;
     private Toast toast;
-private RecyclerView userPostsRecyclerView;
+    private RecyclerView userPostsRecyclerView;
 
 
     @BindView(R.id.profile_screen_image_view)
@@ -107,11 +117,11 @@ private RecyclerView userPostsRecyclerView;
                 }
             }
             if(FirebaseAuth.getInstance().getCurrentUser() != null) {
-                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("profile_image.jpg");
+                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference()
+                        .child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .child("profile_image.jpg");
                 userStorageReference.getDownloadUrl()
-                        .addOnSuccessListener(uri -> {
-                            Glide.with(getApplicationContext()).load(uri).into(profileScreenImageView);
-                        })
+                        .addOnSuccessListener(uri -> Glide.with(getApplicationContext()).load(uri).into(profileScreenImageView))
                         .addOnFailureListener(Throwable::printStackTrace);
             }
         }
@@ -147,7 +157,7 @@ private RecyclerView userPostsRecyclerView;
 
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
 
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    getCameraPermission(takePictureIntent);
                 }
             }
         });
@@ -192,7 +202,8 @@ private RecyclerView userPostsRecyclerView;
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if(currentUser != null){
-            DatabaseReference reference = firebaseDatabase.getReference(MainActivity.USER).child(currentUser.getUid()).child(key);
+            DatabaseReference reference = firebaseDatabase.getReference(MainActivity.USER)
+                    .child(currentUser.getUid()).child(key);
             reference.setValue(value);
         }
     }
@@ -213,7 +224,8 @@ private RecyclerView userPostsRecyclerView;
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             resultsBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             if(FirebaseAuth.getInstance() != null) {
-                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getUid()).child("profile_image.jpg");
+                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference()
+                        .child("users").child(FirebaseAuth.getInstance().getUid()).child("profile_image.jpg");
                 userStorageReference.putBytes(stream.toByteArray());
                 Toast.makeText(this, R.string.new_image_info_message, Toast.LENGTH_SHORT).show();
             }
@@ -231,5 +243,28 @@ private RecyclerView userPostsRecyclerView;
     public void onBackPressed() {
         super.onBackPressed();
         NavUtils.navigateUpFromSameTask(this);
+    }
+
+    private void getCameraPermission(Intent takePictureIntent) {
+        String[] permissions = {Manifest.permission.CAMERA};
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+        else {
+            ActivityCompat.requestPermissions(this, permissions, CAMERA_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == CAMERA_REQUEST_CODE){
+            if(grantResults.length > 0){
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

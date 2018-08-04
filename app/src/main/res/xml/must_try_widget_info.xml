@@ -4,7 +4,7 @@
     android:initialLayout="@layout/must_try_widget_layout"
     android:minWidth="110dp"
     android:minHeight="40dp"
-    android:previewImage="@drawable/example_appwidget_preview"
+    android:previewImage="@drawable/ice_cream_icon_orange_and_blue_small"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen"/>

@@ -50,7 +50,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
+ * This activity is used to share an ice cream.
  * Parts of the code related with the use of camera and the image display were taken from the emojifier app
+ * and parts of the code related with the maps were taken from the sushme app.
  */
 public class ShareActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -68,9 +70,7 @@ public class ShareActivity extends AppCompatActivity implements
     private String tempPhotoPath;
     private Bitmap resultsBitmap;
     private FirebaseStorage firebaseStorage;
-    private FirebaseAuth firebaseAuth;
     private String resultPlace;
-    private boolean permissionGranted;
 
     @BindView(R.id.ice_cream_image_view)
     ImageView iceCreamImageView;
@@ -110,7 +110,7 @@ public class ShareActivity extends AppCompatActivity implements
         }
 
         firebaseStorage = FirebaseStorage.getInstance();
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         Intent startIntent = getIntent();
         User user = null;
@@ -306,7 +306,6 @@ public class ShareActivity extends AppCompatActivity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        permissionGranted = false;
         if(requestCode == CAMERA_REQUEST_CODE){
             if(grantResults.length > 0){
                 for (int grantResult : grantResults) {
@@ -315,7 +314,6 @@ public class ShareActivity extends AppCompatActivity implements
                     }
                 }
             }
-            permissionGranted = true;
         }
     }
 }

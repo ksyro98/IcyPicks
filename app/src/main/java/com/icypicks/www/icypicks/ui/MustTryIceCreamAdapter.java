@@ -1,28 +1,17 @@
 package com.icypicks.www.icypicks.ui;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.icypicks.www.icypicks.R;
-import com.icypicks.www.icypicks.database.IceCreamContract;
 import com.icypicks.www.icypicks.java_classes.IceCream;
 
 import java.util.ArrayList;
@@ -30,12 +19,16 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * This adapter is used to bind the recycler view items with the ice creams in the must-try list.
+ * The adapter has a field representing an ArrayList of ice creams and it gets its data from there.
+ */
 public class MustTryIceCreamAdapter extends RecyclerView.Adapter<MustTryIceCreamAdapter.MustTryIceCreamViewHolder>{
 
     private Context context;
     private ArrayList<IceCream> mustTryIceCreams;
 
-    public MustTryIceCreamAdapter(Context context, ArrayList<IceCream> mustTryIceCreams){
+    MustTryIceCreamAdapter(Context context, ArrayList<IceCream> mustTryIceCreams){
         this.context = context;
         this.mustTryIceCreams = mustTryIceCreams;
     }

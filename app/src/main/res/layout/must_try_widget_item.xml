@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/item_frame_layout"
+    android:id="@+id/widget_item_linear_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:orientation="vertical">
 
-    <ListView
+    <TextView
         android:id="@+id/widget_item_text_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:textColor="@color/colorPrimary"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:padding="4dp"/>
 
-</FrameLayout>
+</LinearLayout>

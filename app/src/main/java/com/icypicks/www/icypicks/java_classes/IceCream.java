@@ -1,7 +1,11 @@
 package com.icypicks.www.icypicks.java_classes;
 
-import java.util.ArrayList;
-
+/**
+ * This class represents an ice cream.
+ * Each ice cream has a flavor, a description, a place from where the user bought it,
+ * an image (stored both as a URL and as an array of bytes)
+ * and an upload number used to query the ice creams saved in the firebase storage.
+ */
 public class IceCream {
     private String flavor;
     private String place;
