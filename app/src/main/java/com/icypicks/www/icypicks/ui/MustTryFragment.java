@@ -65,7 +65,11 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
         mustTryRecyclerView.setAdapter(mustTryIceCreamAdapter);
 
         //delay needed for this to work
-        new Handler().postDelayed(() -> mustTryRecyclerView.smoothScrollToPosition(currentPosition), 100);
+        new Handler().postDelayed(() -> {
+            if(currentPosition != NO_POSITION) {
+                mustTryRecyclerView.smoothScrollToPosition(currentPosition);
+            }
+        }, 100);
 
         loadData();
 

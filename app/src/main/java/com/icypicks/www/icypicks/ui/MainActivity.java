@@ -1,12 +1,10 @@
 package com.icypicks.www.icypicks.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
@@ -63,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private AllIceCreamAdapter allIceCreamAdapter;
     private int numberOfUploads = -1;
     private boolean selectedFragment = true; //trie -> AllFragment, false -> MustTryFragment
+    private static boolean firstTime = true;
 
     public static final String INFO_FILE_NAME = "info.txt";
     private static final int REQUEST_CODE = 1;
@@ -196,8 +195,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else{
-            Intent intent = new Intent(this, LogInSignUpActivity.class);
-            startActivityForResult(intent, REQUEST_CODE);
+            if(firstTime) {
+                Intent intent = new Intent(this, LogInSignUpActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
         }
     }
 
@@ -326,27 +327,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
         selectedFragment = fragment instanceof AllFragment;
-
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        fragmentManager.beginTransaction()
-//                .detach(fragment)
-//                .commit();
     }
 
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putBoolean(FRAGMENT_SELECTION_KEY, selectedFragment);
-//        if(fragment instanceof AllFragment) {
-//            outState.putBoolean(FRAGMENT_SELECTION_KEY, true);
-//        }
-//        else{
-//            outState.putBoolean(FRAGMENT_SELECTION_KEY, false);
-//        }
     }
 
     private void loadUiOnLogIn(){
@@ -384,5 +372,9 @@ public class MainActivity extends AppCompatActivity {
                 loadingToast.show();
             }
         }), 30000);
+    }
+
+    public static void setFirstTime(boolean firstTime){
+        MainActivity.firstTime = firstTime;
     }
 }

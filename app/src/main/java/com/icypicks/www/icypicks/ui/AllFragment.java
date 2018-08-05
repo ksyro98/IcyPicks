@@ -50,7 +50,11 @@ public class AllFragment extends Fragment {
         allRecyclerView.setAdapter(allIceCreamAdapter);
 
         //delay needed for this to work
-        new Handler().postDelayed(()-> allRecyclerView.smoothScrollToPosition(currentPosition), 100);
+        new Handler().postDelayed(()-> {
+            if (currentPosition != NO_POSITION) {
+                allRecyclerView.smoothScrollToPosition(currentPosition);
+            }
+        }, 100);
 
         return view;
     }

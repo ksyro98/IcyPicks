@@ -97,6 +97,7 @@ public class LogInSignUpActivity extends AppCompatActivity {
                     resultIntent.putExtra(USER_INTENT, user);
                 }
                 setResult(RESULT_OK, resultIntent);
+                MainActivity.setFirstTime(false);
                 finish();
             }
         };
