@@ -1,11 +1,14 @@
 package com.icypicks.www.icypicks.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -66,6 +69,7 @@ public class ShareActivity extends AppCompatActivity implements
     private static final String PLACE_KEY = "saved_instance_state_place_key";
     private static final String BITMAP_FILE_KEY = "saved_instance_state_bitmap_file_key";
     private static final int CAMERA_REQUEST_CODE = 314;
+    private static final int LOCATION_REQUEST_CODE = 271;
 
     private String tempPhotoPath;
     private Bitmap resultsBitmap;
@@ -207,7 +211,9 @@ public class ShareActivity extends AppCompatActivity implements
             PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
             try {
-                startActivityForResult(builder.build(this), REQUEST_PLACE_PICKER);
+                //todo
+//                startActivityForResult(builder.build(this), REQUEST_PLACE_PICKER);
+                getLocationPermission(builder.build(this));
             } catch (GooglePlayServicesRepairableException e) {
                 e.printStackTrace();
             } catch (GooglePlayServicesNotAvailableException e) {
@@ -222,12 +228,11 @@ public class ShareActivity extends AppCompatActivity implements
                 .enableAutoManage(this, this)
                 .build();
     }
-
+//todo
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if((requestCode == REQUEST_IMAGE_CAPTURE) && (resultCode == RESULT_OK)){
-            resultsBitmap = BitmapUtils.resamplePic(this, tempPhotoPath);
-            iceCreamImageView.setImageBitmap(resultsBitmap);
+            new BitmapResampleTask(this).execute(tempPhotoPath);
         }
         else if((requestCode == REQUEST_PLACE_PICKER) && (resultCode == RESULT_OK)){
             locationButton.setEnabled(true);
@@ -304,9 +309,19 @@ public class ShareActivity extends AppCompatActivity implements
         }
     }
 
+    private void getLocationPermission(Intent placePickerIntent){
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
+        if(ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            startActivityForResult(placePickerIntent, REQUEST_PLACE_PICKER);
+        }
+        else{
+            ActivityCompat.requestPermissions(this, permissions, LOCATION_REQUEST_CODE);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == CAMERA_REQUEST_CODE){
+        if(requestCode == CAMERA_REQUEST_CODE || requestCode == LOCATION_REQUEST_CODE){
             if(grantResults.length > 0){
                 for (int grantResult : grantResults) {
                     if (grantResult != PackageManager.PERMISSION_GRANTED) {
@@ -314,6 +329,27 @@ public class ShareActivity extends AppCompatActivity implements
                     }
                 }
             }
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    class BitmapResampleTask extends AsyncTask<String, Void, Bitmap> {
+        Context context;
+
+        BitmapResampleTask(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            resultsBitmap = BitmapUtils.resamplePic(context, strings[0]);
+            return resultsBitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            iceCreamImageView.setImageBitmap(bitmap);
         }
     }
 }

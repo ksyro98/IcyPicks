@@ -18,6 +18,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.icypicks.www.icypicks.R;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -60,8 +64,17 @@ public class AllIceCreamAdapter extends RecyclerView.Adapter<AllIceCreamAdapter.
         holder.iceCreamImageView.setOnClickListener(view -> {
             if(holder.iceCreamImageView.getDrawable() != null) {
                 Bitmap bitmap = ((BitmapDrawable) holder.iceCreamImageView.getDrawable()).getBitmap();
+                File tempBitmapFile = new File(context.getCacheDir(), "tempBitmapFile.jpg");
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(tempBitmapFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                }
+                catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
                 Intent intent = new Intent(context, DetailActivity.class);
-                intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+                intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, tempBitmapFile.getAbsolutePath());
                 intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, numberOfImages - position);
                 context.startActivity(intent);
             }

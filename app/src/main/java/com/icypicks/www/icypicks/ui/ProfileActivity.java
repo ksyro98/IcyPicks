@@ -1,11 +1,14 @@
 package com.icypicks.www.icypicks.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -218,20 +221,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if((requestCode == REQUEST_IMAGE_CAPTURE) && (resultCode == RESULT_OK)){
-            Bitmap resultsBitmap = BitmapUtils.resamplePic(this, tempPhotoPath);
-            profileScreenImageView.setImageBitmap(resultsBitmap);
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            resultsBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            if(FirebaseAuth.getInstance() != null) {
-                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference()
-                        .child("users").child(FirebaseAuth.getInstance().getUid()).child("profile_image.jpg");
-                userStorageReference.putBytes(stream.toByteArray());
-                Toast.makeText(this, R.string.new_image_info_message, Toast.LENGTH_SHORT).show();
-            }
-            else{
-                Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
-            }
+            new BitmapResampleTask(this).execute(tempPhotoPath);
         }
         else{
             BitmapUtils.deleteImageFile(this, tempPhotoPath);
@@ -264,6 +254,38 @@ public class ProfileActivity extends AppCompatActivity {
                         return;
                     }
                 }
+            }
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    class BitmapResampleTask extends AsyncTask<String, Void, Bitmap>{
+        Context context;
+
+        BitmapResampleTask(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            return BitmapUtils.resamplePic(context, strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            profileScreenImageView.setImageBitmap(bitmap);
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            if(FirebaseAuth.getInstance() != null) {
+                StorageReference userStorageReference = FirebaseStorage.getInstance().getReference()
+                        .child("users").child(FirebaseAuth.getInstance().getUid()).child("profile_image.jpg");
+                userStorageReference.putBytes(stream.toByteArray());
+                Toast.makeText(context, R.string.new_image_info_message, Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(context, R.string.unexpected_error, Toast.LENGTH_SHORT).show();
             }
         }
     }

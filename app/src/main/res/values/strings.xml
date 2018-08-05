@@ -54,6 +54,7 @@
     <string name="ice_cream_image">Ice Cream Image</string>
     <string name="profile_image">Profile Image</string>
     <string name="profile_image_placeholder">Profile Image Placeholder</string>
-    <string name="loading_toast">It looks like the app takes too long to load. Please make sure that you are logged in and that you are connected to the Internet.</string>
+    <string name="loading_toast">It looks like the app takes too long to load. Please make sure that you are connected to the Internet.</string>
     <string name="write_to_database_error">Oops something went wrong. :( \nPlease navigate back and try again.</string>
+    <string name="share_an_ice_cream">Share an ice cream!</string>
 </resources>

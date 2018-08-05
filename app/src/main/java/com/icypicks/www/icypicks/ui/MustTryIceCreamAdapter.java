@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +15,9 @@ import android.widget.ImageView;
 import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.java_classes.IceCream;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -53,8 +57,17 @@ public class MustTryIceCreamAdapter extends RecyclerView.Adapter<MustTryIceCream
         holder.iceCreamImageView.setImageBitmap(bitmap);
 
         holder.iceCreamImageView.setOnClickListener(view -> {
+            File tempBitmapFile = new File(context.getCacheDir(), "tempBitmapFile.jpg");
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(tempBitmapFile);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            }
+            catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
             Intent intent = new Intent(context, DetailActivity.class);
-            intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+            intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, tempBitmapFile.getAbsolutePath());
             intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, mustTryIceCreams.get(position).getUploadNumber());
             context.startActivity(intent);
         });

@@ -22,6 +22,8 @@ import com.icypicks.www.icypicks.R;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,8 +109,17 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPo
 
             holder.userPostLinearLayout.setOnClickListener(view -> {
                 Bitmap bitmap = ((BitmapDrawable) holder.userPostIceCreamImageView.getDrawable()).getBitmap();
+                File tempBitmapFile = new File(context.getCacheDir(), "tempBitmapFile.jpg");
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(tempBitmapFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                }
+                catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
                 Intent intent = new Intent(context, DetailActivity.class);
-                intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+                intent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, tempBitmapFile.getAbsolutePath());
                 intent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, uploadNumbers.get(position));
                 context.startActivity(intent);
             });

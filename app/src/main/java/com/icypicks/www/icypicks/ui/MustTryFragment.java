@@ -3,6 +3,7 @@ package com.icypicks.www.icypicks.ui;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.database.IceCreamContract;
@@ -23,6 +25,8 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
 /**
  * This fragment is used to show the ice creams in the must-try list with a recycler viwe.
@@ -38,6 +42,8 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
 
     private ArrayList<IceCream> mustTryIceCreams;
     private MustTryIceCreamAdapter mustTryIceCreamAdapter;
+    private GridLayoutManager layoutManager;
+    private static int currentPosition;
 
 
     public MustTryFragment() {
@@ -53,10 +59,13 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
         mustTryIceCreams = new ArrayList<>();
         mustTryIceCreamAdapter = new MustTryIceCreamAdapter(getContext(), mustTryIceCreams);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
+        layoutManager = new GridLayoutManager(getActivity(), 2);
         mustTryRecyclerView.setLayoutManager(layoutManager);
         mustTryRecyclerView.setHasFixedSize(false);
         mustTryRecyclerView.setAdapter(mustTryIceCreamAdapter);
+
+        //delay needed for this to work
+        new Handler().postDelayed(() -> mustTryRecyclerView.smoothScrollToPosition(currentPosition), 100);
 
         loadData();
 
@@ -73,6 +82,18 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
             else{
                 loaderManager.restartLoader(MUST_TRY_LOADER, null, this);
             }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        currentPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+        if(getActivity() != null) {
+            Toast.makeText(getActivity(), String.valueOf(currentPosition), Toast.LENGTH_SHORT).show();
+        }
+        if(currentPosition == NO_POSITION){
+            currentPosition = layoutManager.findLastVisibleItemPosition();
         }
     }
 
@@ -124,5 +145,4 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
 
     }
-
 }

@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,6 +37,8 @@ import com.icypicks.www.icypicks.java_classes.IceCream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -77,7 +80,16 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
 
         Intent intent = getIntent();
         if(intent != null){
-            Bitmap bitmap = intent.getParcelableExtra(INTENT_IMAGE_EXTRA);
+            String fileName = intent.getStringExtra(INTENT_IMAGE_EXTRA);
+            Bitmap bitmap = BitmapFactory.decodeFile(fileName);
+//            File file = new File(fileName);
+//            try {
+//                FileOutputStream fileOutputStream = new FileOutputStream(file);
+//
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            Bitmap bitmap = intent.getParcelableExtra(INTENT_IMAGE_EXTRA);
             detailIceCreamImageView.setImageBitmap(bitmap);
             int iceCreamNumber = intent.getIntExtra(INTENT_POSITION_EXTRA, 0);
             FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();

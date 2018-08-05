@@ -1,10 +1,12 @@
 package com.icypicks.www.icypicks.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
@@ -29,7 +31,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.icypicks.www.icypicks.java_classes.IceCream;
 import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.java_classes.User;
 
@@ -41,7 +42,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private User user;
     private AllIceCreamAdapter allIceCreamAdapter;
     private int numberOfUploads = -1;
+    private boolean selectedFragment = true; //trie -> AllFragment, false -> MustTryFragment
 
     public static final String INFO_FILE_NAME = "info.txt";
     private static final int REQUEST_CODE = 1;
@@ -98,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         allIceCreamAdapter = new AllIceCreamAdapter(this, numberOfUploads);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(menuItem->{
-
             switch (menuItem.getItemId()){
                 case R.id.all:
                     fragment = new AllFragment();
@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .commit();
+            Log.d(AllFragment.class.getSimpleName(), "bottomNavigationView");
 
             return true;
         });
@@ -125,15 +126,20 @@ public class MainActivity extends AppCompatActivity {
             else{
                 fragment = new MustTryFragment();
             }
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .commit();
         }
         else {
             fragment = new AllFragment();
             ((AllFragment) fragment).setAllIceCreamAdapter(allIceCreamAdapter);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, fragment)
+                    .commit();
         }
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, fragment)
-                .commit();
+
 
         shareFab.setOnClickListener(view->{
             Intent intent = new Intent(this, ShareActivity.class);
@@ -143,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         hideUI();
+
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -169,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         currentUser = auth.getCurrentUser();
         isLoggedIn = (currentUser != null);
-        if(isLoggedIn) {
+        if (isLoggedIn) {
             databaseReference = database.getReference(USER).child(currentUser.getUid());
 
             databaseReference.addValueEventListener(new ValueEventListener() {
@@ -184,9 +191,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            if(fragment instanceof MustTryFragment){
+            if (fragment instanceof MustTryFragment) {
                 ((MustTryFragment) fragment).loadData();
             }
+        }
+        else{
+            Intent intent = new Intent(this, LogInSignUpActivity.class);
+            startActivityForResult(intent, REQUEST_CODE);
         }
     }
 
@@ -313,14 +324,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        selectedFragment = fragment instanceof AllFragment;
+
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        fragmentManager.beginTransaction()
+//                .detach(fragment)
+//                .commit();
+    }
+
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if(fragment instanceof AllFragment) {
-            outState.putBoolean(FRAGMENT_SELECTION_KEY, true);
-        }
-        else{
-            outState.putBoolean(FRAGMENT_SELECTION_KEY, false);
-        }
+
+        outState.putBoolean(FRAGMENT_SELECTION_KEY, selectedFragment);
+//        if(fragment instanceof AllFragment) {
+//            outState.putBoolean(FRAGMENT_SELECTION_KEY, true);
+//        }
+//        else{
+//            outState.putBoolean(FRAGMENT_SELECTION_KEY, false);
+//        }
     }
 
     private void loadUiOnLogIn(){

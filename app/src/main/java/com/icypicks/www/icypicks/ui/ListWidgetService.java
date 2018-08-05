@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -13,6 +14,9 @@ import com.icypicks.www.icypicks.R;
 import com.icypicks.www.icypicks.database.IceCreamContract;
 import com.icypicks.www.icypicks.java_classes.IceCream;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -88,7 +92,15 @@ public class ListWidgetService extends RemoteViewsService {
                 Intent fillIntent = new Intent();
                 byte[] bytes = widgetMustTryIceCreams.get(position).getImageBytes();
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                fillIntent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, bitmap);
+                File tempBitmapFile = new File(context.getCacheDir(), "tempBitmapFile.jpg");
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(tempBitmapFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                }
+                catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                fillIntent.putExtra(DetailActivity.INTENT_IMAGE_EXTRA, tempBitmapFile.getAbsolutePath());
                 fillIntent.putExtra(DetailActivity.INTENT_POSITION_EXTRA, widgetMustTryIceCreams.get(position).getUploadNumber());
                 remoteViews.setOnClickFillInIntent(R.id.widget_item_linear_layout, fillIntent);
             }

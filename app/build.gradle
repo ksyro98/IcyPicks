@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'capstone_key'
+            keyPassword ''
+            storeFile file('C:/_programming/java/android_studio/IcyPicks/keystore.jks')
+            storePassword ''
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.icypicks.www.icypicks"
@@ -15,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 //    buildTypes.each{
