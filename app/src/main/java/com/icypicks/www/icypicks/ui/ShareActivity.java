@@ -211,8 +211,6 @@ public class ShareActivity extends AppCompatActivity implements
             PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
             try {
-                //todo
-//                startActivityForResult(builder.build(this), REQUEST_PLACE_PICKER);
                 getLocationPermission(builder.build(this));
             } catch (GooglePlayServicesRepairableException e) {
                 e.printStackTrace();
@@ -228,7 +226,7 @@ public class ShareActivity extends AppCompatActivity implements
                 .enableAutoManage(this, this)
                 .build();
     }
-//todo
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if((requestCode == REQUEST_IMAGE_CAPTURE) && (resultCode == RESULT_OK)){
