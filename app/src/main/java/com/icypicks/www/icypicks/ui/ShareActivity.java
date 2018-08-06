@@ -75,6 +75,8 @@ public class ShareActivity extends AppCompatActivity implements
     private Bitmap resultsBitmap;
     private FirebaseStorage firebaseStorage;
     private String resultPlace;
+    private Intent takePictureIntent;
+    private Intent placePickerIntent;
 
     @BindView(R.id.ice_cream_image_view)
     ImageView iceCreamImageView;
@@ -125,7 +127,7 @@ public class ShareActivity extends AppCompatActivity implements
         }
 
         iceCreamImageView.setOnClickListener(view ->{
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if(takePictureIntent.resolveActivity(getPackageManager()) != null){
                 File photoFile = null;
                 try{
@@ -142,7 +144,7 @@ public class ShareActivity extends AppCompatActivity implements
 
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
 
-                    getCameraPermission(takePictureIntent);
+                    getCameraPermission();
                 }
             }
         });
@@ -211,7 +213,8 @@ public class ShareActivity extends AppCompatActivity implements
             PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
             try {
-                getLocationPermission(builder.build(this));
+                placePickerIntent = builder.build(this);
+                getLocationPermission();
             } catch (GooglePlayServicesRepairableException e) {
                 e.printStackTrace();
             } catch (GooglePlayServicesNotAvailableException e) {
@@ -297,7 +300,7 @@ public class ShareActivity extends AppCompatActivity implements
         outState.putString(BITMAP_FILE_KEY, tempPhotoPath);
     }
 
-    private void getCameraPermission(Intent takePictureIntent) {
+    private void getCameraPermission() {
         String[] permissions = {Manifest.permission.CAMERA};
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
@@ -307,9 +310,9 @@ public class ShareActivity extends AppCompatActivity implements
         }
     }
 
-    private void getLocationPermission(Intent placePickerIntent){
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+    private void getLocationPermission(){
+        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION};
+        if(ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
             startActivityForResult(placePickerIntent, REQUEST_PLACE_PICKER);
         }
         else{
@@ -319,7 +322,7 @@ public class ShareActivity extends AppCompatActivity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == CAMERA_REQUEST_CODE || requestCode == LOCATION_REQUEST_CODE){
+        if(requestCode == CAMERA_REQUEST_CODE){
             if(grantResults.length > 0){
                 for (int grantResult : grantResults) {
                     if (grantResult != PackageManager.PERMISSION_GRANTED) {
@@ -327,6 +330,17 @@ public class ShareActivity extends AppCompatActivity implements
                     }
                 }
             }
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+        else if(requestCode == LOCATION_REQUEST_CODE){
+            if(grantResults.length > 0){
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                }
+            }
+            startActivityForResult(placePickerIntent, REQUEST_PLACE_PICKER);
         }
     }
 

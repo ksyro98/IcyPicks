@@ -6,7 +6,7 @@ android {
         config {
             keyAlias 'capstone_key'
             keyPassword ''
-            storeFile file('C:/_programming/java/android_studio/IcyPicks/keystore.jks')
+            storeFile file("$rootDir/keystore.jks")
             storePassword ''
         }
     }

@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -63,10 +69,25 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.UserPo
     public void onBindViewHolder(@NonNull UserPostViewHolder holder, int position) {
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        holder.userPostLinearLayout.setEnabled(false);
         if(firebaseUser != null) {
             StorageReference storageReference = firebaseStorage.getReference(String.valueOf(uploadNumbers.get(position)));
             storageReference.child("image.jpg").getDownloadUrl()
-                    .addOnSuccessListener(uri -> Glide.with(context.getApplicationContext()).load(uri).thumbnail(Glide.with(context.getApplicationContext()).load(R.drawable.progress_bar_placeholder)).into(holder.userPostIceCreamImageView))
+                    .addOnSuccessListener(uri -> {
+                        Glide.with(context.getApplicationContext()).load(uri).thumbnail(Glide.with(context.getApplicationContext()).load(R.drawable.progress_bar_placeholder)).listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                holder.userPostLinearLayout.setEnabled(false);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                holder.userPostLinearLayout.setEnabled(true);
+                                return false;
+                            }
+                        }).into(holder.userPostIceCreamImageView);
+                    })
                     .addOnFailureListener(Throwable::printStackTrace);
 
             File flavorFile = new File(context.getCacheDir(), "user_post_flavor.txt");

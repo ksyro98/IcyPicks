@@ -93,9 +93,6 @@ public class MustTryFragment extends Fragment implements LoaderManager.LoaderCal
     public void onPause() {
         super.onPause();
         currentPosition = layoutManager.findLastCompletelyVisibleItemPosition();
-        if(getActivity() != null) {
-            Toast.makeText(getActivity(), String.valueOf(currentPosition), Toast.LENGTH_SHORT).show();
-        }
         if(currentPosition == NO_POSITION){
             currentPosition = layoutManager.findLastVisibleItemPosition();
         }

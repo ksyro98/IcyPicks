@@ -282,10 +282,16 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
         map.getUiSettings().setMyLocationButtonEnabled(false);
         MarkerOptions markerOptions = new MarkerOptions();
         String[] latLng = iceCream.getPlace().split("_");
-        LatLng latLng1 = new LatLng(Double.parseDouble(latLng[0]), Double.parseDouble(latLng[1]));
-        markerOptions.position(latLng1);
-        map.addMarker(markerOptions);
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1, 10));
+        try {
+            LatLng latLng1 = new LatLng(Double.parseDouble(latLng[0]), Double.parseDouble(latLng[1]));
+            markerOptions.position(latLng1);
+            map.addMarker(markerOptions);
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1, 10));
+        }
+        catch (NumberFormatException | IndexOutOfBoundsException e){
+            e.printStackTrace();
+            Log.d(TAG, getString(R.string.no_location_entered));
+        }
     }
 
 
