@@ -250,6 +250,7 @@ public class ShareActivity extends AppCompatActivity implements
                 BitmapUtils.deleteImageFile(this, tempPhotoPath);
             }
         }
+        locationButton.setEnabled(true);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
